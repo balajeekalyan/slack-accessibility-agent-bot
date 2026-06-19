@@ -136,7 +136,7 @@ async function fetchAllChannels(slackClient) {
   let cursor;
   do {
     const result = await slackClient.conversations.list({
-      types: 'public_channel,private_channel',
+      types: 'public_channel,private_channel,mpim',
       exclude_archived: true,
       limit: 200,
       ...(cursor && { cursor }),
