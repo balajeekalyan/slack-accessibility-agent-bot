@@ -59,8 +59,10 @@ const SYSTEM_PROMPT = `You are an accessibility auditor for Slack channels. When
    Clarity (usability): unclear pronouns without a clear referent; unexplained jargon or acronyms; visual-only instructions ("see the chart on the left", "the highlighted row"); message longer than 500 chars with no line breaks
    Vague standalone messages: for every top-level channel message (NOT a thread reply) that is fewer than 15 words, ask yourself "could someone reading only this message know WHAT was done/changed, and WHERE/to which system/item?" — if the answer to either is NO, flag it as type "vague-context-free", severity "warning"; the suggestion must ask the author to add the missing who/what/where detail (e.g. "Specify what was deployed and to which environment")
    Images (WCAG 1.1.1): check the "[Image file accessibility metadata]" appended to the slack_read_channel result — it lists every image and its alt-text status. Only flag meaningful images (charts, screenshots, diagrams, photos) — not decorative ones (solid color, simple icons):
-     • Alt-text IS set and reasonably descriptive → do NOT flag the image for missing alt-text
-     • Alt-text IS set but clearly inadequate (just the filename, "image", "photo", a single word) → type "image-poor-alt-text", severity "warning"; quote the existing alt-text in context
+     • Alt-text IS set — you MUST visually compare it against the actual image content:
+         – Accurate and adequately descriptive → do NOT flag
+         – Describes something unrelated to or contradicting the actual image (e.g. alt-text says "bar chart" but image is a photo of a dog) → type "image-misleading-alt-text", severity "critical"; quote the alt-text and briefly describe what the image actually shows; misleading alt-text is worse than none because it actively misinforms screen reader users
+         – Present but clearly inadequate (just the filename, "image", "photo", a single word, or a vague generic phrase) → type "image-poor-alt-text", severity "warning"; quote the existing alt-text in context
      • NO alt-text set AND no descriptive companion text in the message → type "image-no-alt-text", severity "critical"
      • Filename looks auto-generated or non-descriptive (e.g. "1_XjTCoBcq_xi1Ad60WabLog.png", "IMG_1234.png", "image001.png", "screenshot_20240101.png", names with random alphanumeric sequences, camelCase gibberish, or underscores+numbers) → ALSO add a separate issue: type "image-noisy-filename", severity "warning", suggestion "Rename the file to a human-readable name (e.g. 'architecture-diagram.png') before sharing — screen readers announce the filename alongside the alt-text, so a cryptic name adds unnecessary noise"
    Documents (WCAG 1.1.1/1.2.x): check the "[Document file accessibility metadata]" appended to the slack_read_channel result:
@@ -127,12 +129,12 @@ async function fetchSlackImageForClaude(url) {
   const base64 = Buffer.from(buffer).toString('base64');
 
   const altTextNote = altText
-    ? `This image has alt-text set: "${altText}". Evaluate whether this alt-text is adequately descriptive for screen reader users.`
+    ? `This image has alt-text set: "${altText}". Compare this alt-text against what you actually see in the image — is it accurate? Does it describe the right content, or does it describe something unrelated or incorrect?`
     : 'This image has no alt-text set.';
 
   return [
     { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-    { type: 'text', text: `Analyze this image for accessibility. ${altTextNote} Does it convey meaningful information? If so, is the alt-text (if present) adequate, or should it be improved?` },
+    { type: 'text', text: `Analyze this image for accessibility. ${altTextNote} Does the image convey meaningful information? If so, evaluate the alt-text for both accuracy (does it describe THIS image?) and adequacy (is it descriptive enough for a screen reader user?).` },
   ];
 }
 
