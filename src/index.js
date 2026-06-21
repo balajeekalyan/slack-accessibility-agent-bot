@@ -44,7 +44,7 @@ app.command('/accessibility-audit', async ({ command, ack, respond, client }) =>
   await respond({
     response_type: 'ephemeral',
     text: auditAll
-      ? `:mag: Accessibility audit starting for *all channels and group messages*… Results will be posted to *#${RESULTS_CHANNEL_NAME}*.`
+      ? `:mag: Accessibility audit starting for *all channels*… Results will be posted to *#${RESULTS_CHANNEL_NAME}*.`
       : `:mag: Accessibility audit starting… Results will be posted to *#${RESULTS_CHANNEL_NAME}*.`,
   });
 
@@ -67,7 +67,7 @@ app.command('/accessibility-audit', async ({ command, ack, respond, client }) =>
       for (const channel of channels) {
         console.log(`[audit] Starting audit for #${channel.name}`);
         try {
-          if (!channel.is_mpim) allResults.push(...checkChannelMetadata(channel.id, channel.name, channel));
+          allResults.push(...checkChannelMetadata(channel.id, channel.name, channel));
           const results = await auditChannelWithClaude(channel.id, channel.name);
           allResults.push(...results);
           audited.push(channel.name);

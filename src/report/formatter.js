@@ -69,12 +69,12 @@ function buildDetailedHtml(channelResults, { criticalCount, warningCount, infoCo
 
   // --- channel overview list ---
   const overviewItems = [];
-  if (withIssues.size > 0) overviewItems.push(`<li class="has-issues">⚠️ <strong>Issues found (${withIssues.size}):</strong> ${[...withIssues].map(n => esc(channelLabel(n))).join(', ')}</li>`);
-  if (clean.length > 0) overviewItems.push(`<li class="clean">✅ <strong>No issues (${clean.length}):</strong> ${clean.map(n => esc(channelLabel(n))).join(', ')}</li>`);
-  if (resultsChannelSkipped.length > 0) overviewItems.push(`<li class="skipped">⏭ <strong>Skipped (${resultsChannelSkipped.length}):</strong> ${resultsChannelSkipped.map(s => esc(channelLabel(s.name))).join(', ')} — results channel</li>`);
-  if (notInvited.length > 0) overviewItems.push(`<li class="skipped">🚫 <strong>Not invited (${notInvited.length}):</strong> ${notInvited.map(s => esc(channelLabel(s.name))).join(', ')}</li>`);
-  if (errored.length > 0) overviewItems.push(`<li class="skipped">⚠️ <strong>Errored (${errored.length}):</strong> ${errored.map(s => esc(channelLabel(s.name))).join(', ')}</li>`);
-  if (noAccess.length > 0) overviewItems.push(`<li class="skipped">🔒 <strong>No access (${noAccess.length}):</strong> ${noAccess.map(n => esc(channelLabel(n))).join(', ')}</li>`);
+  if (withIssues.size > 0) overviewItems.push(`<li class="has-issues">⚠️ <strong>Issues found (${withIssues.size}):</strong> ${[...withIssues].map(n => `#${esc(n)}`).join(', ')}</li>`);
+  if (clean.length > 0) overviewItems.push(`<li class="clean">✅ <strong>No issues (${clean.length}):</strong> ${clean.map(n => `#${esc(n)}`).join(', ')}</li>`);
+  if (resultsChannelSkipped.length > 0) overviewItems.push(`<li class="skipped">⏭ <strong>Skipped (${resultsChannelSkipped.length}):</strong> ${resultsChannelSkipped.map(s => `#${esc(s.name)}`).join(', ')} — results channel</li>`);
+  if (notInvited.length > 0) overviewItems.push(`<li class="skipped">🚫 <strong>Not invited (${notInvited.length}):</strong> ${notInvited.map(s => `#${esc(s.name)}`).join(', ')}</li>`);
+  if (errored.length > 0) overviewItems.push(`<li class="skipped">⚠️ <strong>Errored (${errored.length}):</strong> ${errored.map(s => `#${esc(s.name)}`).join(', ')}</li>`);
+  if (noAccess.length > 0) overviewItems.push(`<li class="skipped">🔒 <strong>No access (${noAccess.length}):</strong> ${noAccess.map(n => `#${esc(n)}`).join(', ')}</li>`);
 
   // --- per-channel findings ---
   let findingsHtml = '';
@@ -126,7 +126,7 @@ function buildDetailedHtml(channelResults, { criticalCount, warningCount, infoCo
       findingsHtml += `
         <section class="channel-section">
           <details>
-            <summary class="channel-name">${esc(channelLabel(channelName))} ${statSpan}</summary>
+            <summary class="channel-name">#${esc(channelName)} ${statSpan}</summary>
             <div class="channel-body">${messagesHtml}</div>
           </details>
         </section>`;
@@ -232,14 +232,6 @@ function buildDetailedHtml(channelResults, { criticalCount, warningCount, infoCo
 </html>`;
 }
 
-function channelLabel(name) {
-  if (name.startsWith('mpdm-')) {
-    const inner = name.replace(/^mpdm-/, '').replace(/-\d+$/, '');
-    return `Group DM: ${inner.split('--').filter(Boolean).join(', ')}`;
-  }
-  return `#${name}`;
-}
-
 function esc(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -258,12 +250,12 @@ function appendChannelOverview(blocks, rankedChannels, audited, skipped, noAcces
   const errored = skipped.filter(s => s.reason !== 'not_invited' && s.reason !== 'results_channel');
 
   const lines = [];
-  if (withIssues.size > 0) lines.push(`⚠️ *Issues found (${withIssues.size}):* ${[...withIssues].map(n => channelLabel(n)).join(', ')}`);
-  if (clean.length > 0) lines.push(`✅ *No issues (${clean.length}):* ${clean.map(n => channelLabel(n)).join(', ')}`);
-  if (resultsChannelSkipped.length > 0) lines.push(`:skip: *Skipped (${resultsChannelSkipped.length}):* ${resultsChannelSkipped.map(s => channelLabel(s.name)).join(', ')} — results channel`);
-  if (notInvited.length > 0) lines.push(`:no_entry_sign: *Not invited (${notInvited.length}):* ${notInvited.map(s => channelLabel(s.name)).join(', ')} — run \`/invite @<bot>\` to include`);
-  if (errored.length > 0) lines.push(`:warning: *Errored (${errored.length}):* ${errored.map(s => channelLabel(s.name)).join(', ')}`);
-  if (noAccess.length > 0) lines.push(`:lock: *No access (${noAccess.length}):* ${noAccess.map(n => channelLabel(n)).join(', ')} — bot is not a member`);
+  if (withIssues.size > 0) lines.push(`⚠️ *Issues found (${withIssues.size}):* ${[...withIssues].map(n => `#${n}`).join(', ')}`);
+  if (clean.length > 0) lines.push(`✅ *No issues (${clean.length}):* ${clean.map(n => `#${n}`).join(', ')}`);
+  if (resultsChannelSkipped.length > 0) lines.push(`:skip: *Skipped (${resultsChannelSkipped.length}):* ${resultsChannelSkipped.map(s => `#${s.name}`).join(', ')} — results channel`);
+  if (notInvited.length > 0) lines.push(`:no_entry_sign: *Not invited (${notInvited.length}):* ${notInvited.map(s => `#${s.name}`).join(', ')} — run \`/invite @<bot>\` to include`);
+  if (errored.length > 0) lines.push(`:warning: *Errored (${errored.length}):* ${errored.map(s => `#${s.name}`).join(', ')}`);
+  if (noAccess.length > 0) lines.push(`:lock: *No access (${noAccess.length}):* ${noAccess.map(n => `#${n}`).join(', ')} — bot is not a member`);
 
   if (lines.length === 0) return;
 
